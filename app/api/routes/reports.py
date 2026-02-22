@@ -34,16 +34,26 @@ def list_reports() -> dict:
         try:
             payload = json.loads(path.read_text(encoding="utf-8"))
             source_file = payload.get("source_file", "")
+            score = int(payload.get("executive_summary", {}).get("overall_risk_score", 0))
+            severity = "low"
+            if score >= 70:
+                severity = "high"
+            elif score >= 40:
+                severity = "medium"
         except Exception:
             source_file = ""
+            score = 0
+            severity = "low"
 
         items.append(
             {
                 "id": report_id,
                 "source_file": source_file,
                 "path": str(path),
+                "timestamp": path.stat().st_mtime,
+                "score": score,
+                "severity": severity,
             }
         )
 
     return {"count": len(items), "reports": items}
-

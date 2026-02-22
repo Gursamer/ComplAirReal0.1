@@ -69,6 +69,26 @@ curl -X POST "http://127.0.0.1:8000/analyze" \
 python -m unittest app.tests.test_smoke -v
 ```
 
+## Frontend investor demo (Phase 3)
+
+```bash
+cd frontend
+cp .env.example .env.local
+npm install
+npm run dev
+```
+
+Open `http://localhost:3000`.
+
+Frontend pages:
+
+- `/` marketing landing
+- `/dashboard` dashboard + charts
+- `/upload` upload + analyze
+- `/reports` reports list
+- `/reports/{id}` detailed report view
+- `/settings` API base URL + demo settings
+
 ## Output
 
 Report JSON is written to:
