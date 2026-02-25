@@ -13,12 +13,12 @@ export function Citations({ clauses }: { clauses: NormalizedClause[] }) {
 
   return (
     <Card className="p-5">
-      <h3 className="text-base font-semibold text-text">Citations</h3>
+      <h3 className="text-base font-semibold text-slate-900">Citations</h3>
       <div className="mt-4 space-y-3">
         {rows.slice(0, 10).map((row, index) => (
           <div key={`${row.article}-${index}`} className="rounded-xl border border-slate-200 bg-slate-50 p-3">
             <div className="flex items-center justify-between gap-3">
-              <p className="text-sm font-semibold text-text">{row.article}</p>
+              <p className="text-sm font-semibold text-slate-900">{row.article}</p>
               <p className="text-xs text-slate-500">Similarity: {row.similarity.toFixed(2)}</p>
             </div>
             <p className="mt-1 text-xs text-slate-500">Linked clause: {row.clause}</p>

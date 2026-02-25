@@ -7,15 +7,19 @@ import { useEffect, useMemo, useState } from "react";
 
 import { CategoryDonut } from "@/components/charts/category-donut";
 import { ClauseRiskBar } from "@/components/charts/clause-risk-bar";
+import { RiskTrendChart } from "@/components/charts/risk-trend-chart";
 import { Citations } from "@/components/sections/citations";
+import { ChatPanel } from "@/components/sections/chat-panel";
+import { ClauseDiffPreview } from "@/components/sections/clause-diff-preview";
 import { FlaggedClauses } from "@/components/sections/flagged-clauses";
 import { KeyFindings } from "@/components/sections/key-findings";
 import { SuggestedFixes } from "@/components/sections/suggested-fixes";
+import { TopRisksSummary } from "@/components/sections/top-risks-summary";
 import { SeverityBadge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ScoreRing } from "@/components/ui/score-ring";
-import { getReport } from "@/lib/api";
+import { downloadReportPdf, getReport } from "@/lib/api";
 import { type NormalizedReport } from "@/lib/types";
 
 export default function ReportPage() {
@@ -52,7 +56,15 @@ export default function ReportPage() {
       .map((c) => ({ name: c.id, score: c.riskScore }));
   }, [report]);
 
-  if (error) return <Card className="p-5 text-sm text-rose-700">{error}</Card>;
+  const timeline = useMemo(() => {
+    if (!report) return [];
+    return report.clauses.slice(0, 10).map((clause, idx) => ({
+      date: `Step ${idx + 1}`,
+      score: clause.riskScore,
+    }));
+  }, [report]);
+
+  if (error) return <Card className="p-5 text-sm text-rose-300">{error}</Card>;
   if (!report) return <div className="text-sm text-slate-600">Loading report...</div>;
 
   const download = () => {
@@ -65,70 +77,106 @@ export default function ReportPage() {
     URL.revokeObjectURL(url);
   };
 
+  const downloadPdf = async () => {
+    if (!report) return;
+    try {
+      const blob = await downloadReportPdf(report.id);
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `${report.id}.pdf`;
+      link.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to export PDF.");
+    }
+  };
+
   return (
-    <div className="space-y-6">
-      <motion.section
-        initial={{ opacity: 0, y: 14 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="grid gap-4 rounded-2xl border border-slate-200 bg-white p-5 md:grid-cols-[auto,1fr,auto] md:items-center"
-      >
-        <ScoreRing score={report.overallScore} />
-        <div>
-          <p className="text-xs uppercase tracking-wider text-slate-500">Overall compliance score</p>
-          <h2 className="mt-1 text-2xl font-bold text-text">{report.filename}</h2>
-          <div className="mt-2">
-            <SeverityBadge severity={report.severity} />
+    <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
+      <div className="space-y-6">
+        <motion.section
+          initial={{ opacity: 0, y: 14 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="grid gap-4 rounded-2xl border border-slate-200 bg-white p-5 md:grid-cols-[auto,1fr,auto] md:items-center"
+        >
+          <ScoreRing score={report.overallScore} />
+          <div>
+            <p className="text-xs uppercase tracking-wider text-slate-500">Overall compliance score</p>
+            <h2 className="mt-1 text-2xl font-bold text-slate-900">{report.filename}</h2>
+            <div className="mt-2">
+              <SeverityBadge severity={report.severity} />
+            </div>
           </div>
-        </div>
-        <div className="flex gap-2">
-          <Button variant="secondary" onClick={download} className="gap-2">
-            <Download size={14} /> Download JSON
-          </Button>
-          <Button variant="ghost" disabled>
-            Export PDF (soon)
-          </Button>
-        </div>
-      </motion.section>
+          <div className="flex gap-2">
+            <Button variant="secondary" onClick={download} className="gap-2">
+              <Download size={14} /> Download JSON
+            </Button>
+            <Button variant="ghost" onClick={downloadPdf}>
+              Export PDF
+            </Button>
+          </div>
+        </motion.section>
 
-      <section className="grid gap-4 md:grid-cols-4">
-        <Card className="p-4">
-          <p className="text-xs text-slate-500">High-risk clauses</p>
-          <p className="mt-2 text-2xl font-bold">{report.highRiskCount}</p>
-        </Card>
-        <Card className="p-4">
-          <p className="text-xs text-slate-500">Missing requirements</p>
-          <p className="mt-2 text-2xl font-bold">{report.missingRequirementsCount}</p>
-        </Card>
-        <Card className="p-4">
-          <p className="text-xs text-slate-500">Top regulation cited</p>
-          <p className="mt-2 text-2xl font-bold">{report.topRegulation}</p>
-        </Card>
-        <Card className="p-4">
-          <p className="text-xs text-slate-500">Estimated time saved</p>
-          <p className="mt-2 text-2xl font-bold">{report.estimatedTimeSavedHours}h</p>
-        </Card>
-      </section>
+        <section className="grid gap-4 md:grid-cols-4">
+          <Card className="p-4">
+            <p className="text-xs text-slate-500">High-risk clauses</p>
+            <p className="mt-2 text-2xl font-bold text-slate-900">{report.highRiskCount}</p>
+          </Card>
+          <Card className="p-4">
+            <p className="text-xs text-slate-500">Missing requirements</p>
+            <p className="mt-2 text-2xl font-bold text-slate-900">{report.missingRequirementsCount}</p>
+          </Card>
+          <Card className="p-4">
+            <p className="text-xs text-slate-500">Top regulation cited</p>
+            <p className="mt-2 text-2xl font-bold text-slate-900">{report.topRegulation}</p>
+          </Card>
+          <Card className="p-4">
+            <p className="text-xs text-slate-500">Estimated time saved</p>
+            <p className="mt-2 text-2xl font-bold text-slate-900">{report.estimatedTimeSavedHours}h</p>
+          </Card>
+        </section>
 
-      <section className="grid gap-4 xl:grid-cols-2">
-        <Card className="p-5">
-          <h3 className="text-base font-semibold">Category risk breakdown</h3>
-          <CategoryDonut data={categoryBreakdown} />
-        </Card>
-        <Card className="p-5">
-          <h3 className="text-base font-semibold">Top 10 risky clauses</h3>
-          <ClauseRiskBar data={topRisks} />
-        </Card>
-      </section>
+        <section className="grid gap-4 xl:grid-cols-2">
+          <Card className="p-5">
+            <h3 className="text-base font-semibold text-slate-900">Category risk breakdown</h3>
+            <CategoryDonut data={categoryBreakdown} />
+          </Card>
+          <Card className="p-5">
+            <h3 className="text-base font-semibold text-slate-900">Top 10 risky clauses</h3>
+            <ClauseRiskBar data={topRisks} />
+          </Card>
+        </section>
 
-      <section className="grid gap-4 xl:grid-cols-2">
-        <KeyFindings items={report.keyFindings} />
-        <Citations clauses={report.clauses} />
-      </section>
+        <section>
+          <Card className="p-5">
+            <h3 className="text-base font-semibold text-slate-900">Risk timeline</h3>
+            <RiskTrendChart data={timeline} />
+          </Card>
+        </section>
 
-      <section className="grid gap-4 xl:grid-cols-2">
-        <FlaggedClauses clauses={report.clauses} />
-        <SuggestedFixes clauses={report.clauses} />
-      </section>
+        <section className="grid gap-4 xl:grid-cols-2">
+          <TopRisksSummary clauses={report.clauses} />
+          <KeyFindings items={report.keyFindings} />
+        </section>
+
+        <section>
+          <ClauseDiffPreview clauses={report.clauses} />
+        </section>
+
+        <section>
+          <Citations clauses={report.clauses} />
+        </section>
+
+        <section className="grid gap-4 xl:grid-cols-2">
+          <FlaggedClauses clauses={report.clauses} />
+          <SuggestedFixes clauses={report.clauses} />
+        </section>
+      </div>
+
+      <aside className="xl:sticky xl:top-6 xl:h-[calc(100vh-3rem)]">
+        <ChatPanel report={report} />
+      </aside>
     </div>
   );
 }

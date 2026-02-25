@@ -6,6 +6,8 @@ export interface RawReport {
   timestamp?: string;
   source_file?: string;
   document_hash?: string;
+  analysis_profile?: string;
+  regulations?: string[];
   overall_score?: number;
   severity?: Severity;
   clauses?: Array<{
@@ -89,6 +91,7 @@ export interface ReportListResponse {
   reports: Array<{
     id: string;
     source_file?: string;
+    profile?: string;
     timestamp?: string;
     score?: number;
     severity?: Severity;

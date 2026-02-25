@@ -1,0 +1,33 @@
+Data Processing Addendum - StartupAI Labs
+
+Effective Date: February 1, 2026
+
+1. Scope
+This DPA governs processing of personal data on behalf of the Customer.
+
+2. Roles
+Customer acts as Controller. StartupAI Labs acts as Processor.
+
+3. Processing Instructions
+Processor will process personal data only on documented instructions from Controller.
+
+4. Confidentiality
+Processor personnel with access to personal data are bound by confidentiality obligations.
+
+5. Security Controls
+Processor maintains technical and organizational controls, including access control, encryption in transit, and audit logging.
+
+6. Subprocessors
+Processor may engage subprocessors and will maintain an up-to-date subprocessor list.
+
+7. Assistance
+Processor will assist Controller with data subject requests and compliance obligations as required by applicable law.
+
+8. Breach Notification
+Processor will notify Controller without undue delay after becoming aware of a personal data breach.
+
+9. Deletion and Return
+Upon termination, Processor will delete or return personal data unless retention is legally required.
+
+10. Audit Cooperation
+Processor will provide reasonable information to demonstrate compliance with this DPA.

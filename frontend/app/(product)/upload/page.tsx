@@ -73,12 +73,12 @@ export default function UploadPage() {
   return (
     <div className="mx-auto max-w-3xl space-y-5">
       <Card className="p-5">
-        <h2 className="text-lg font-semibold text-text">Upload + Analyze</h2>
-        <p className="mt-1 text-sm text-slate-600">Drop a contract or policy file to generate a compliance report.</p>
+        <h2 className="text-lg font-semibold text-slate-900">Upload + Analyze</h2>
+        <p className="mt-1 text-sm text-slate-500">Drop a contract or policy file to generate a compliance report.</p>
 
         <motion.div
           className={`mt-5 rounded-2xl border-2 border-dashed p-8 text-center transition ${
-            dragging ? "border-accent bg-emerald-50" : "border-slate-300 bg-slate-50"
+            dragging ? "border-slate-500 bg-slate-100" : "border-slate-300 bg-slate-50"
           }`}
           whileHover={{ scale: 1.01 }}
           onDragOver={(e) => {
@@ -92,7 +92,7 @@ export default function UploadPage() {
             onFile(e.dataTransfer.files?.[0]);
           }}
         >
-          <UploadCloud className="mx-auto text-accent" size={28} />
+          <UploadCloud className="mx-auto text-slate-700" size={28} />
           <p className="mt-3 text-sm text-slate-700">Drag & drop PDF, DOCX, or TXT here</p>
           <p className="mt-1 text-xs text-slate-500">Max 25MB</p>
           <label className="mt-4 inline-flex cursor-pointer rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white">
@@ -105,7 +105,7 @@ export default function UploadPage() {
             />
           </label>
           {file && (
-            <div className="mx-auto mt-4 inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-xs text-slate-700">
+            <div className="mx-auto mt-4 inline-flex items-center gap-2 rounded-full bg-slate-200 px-3 py-1 text-xs text-slate-700">
               <FileUp size={14} />
               {file.name}
             </div>
@@ -114,11 +114,12 @@ export default function UploadPage() {
 
         <div className="mt-5 grid gap-3 md:grid-cols-2">
           <div>
-            <label className="mb-1 block text-xs font-semibold text-slate-600">Analysis profile</label>
+            <label className="mb-1 block text-xs font-semibold text-slate-500">Analysis profile</label>
             <Select value={profile} onChange={(e) => setProfile(e.target.value)}>
               <option value="gdpr">GDPR-focused</option>
-              <option value="vendor">Vendor contract</option>
-              <option value="privacy">Privacy policy</option>
+              <option value="soc2">SOC 2-focused</option>
+              <option value="pci">PCI DSS-focused</option>
+              <option value="multi">Multi-regulation (GDPR + SOC2 + PCI)</option>
             </Select>
           </div>
           <div className="flex items-end">
@@ -129,12 +130,12 @@ export default function UploadPage() {
         </div>
 
         {loading && (
-          <div className="mt-5 rounded-xl border border-slate-200 bg-white p-4">
+          <div className="mt-5 rounded-xl border border-slate-200 bg-slate-50 p-4">
             <ProgressSteps stage={stage} />
           </div>
         )}
 
-        {error && <p className="mt-3 text-sm text-rose-700">{error}</p>}
+        {error && <p className="mt-3 text-sm text-rose-300">{error}</p>}
       </Card>
     </div>
   );

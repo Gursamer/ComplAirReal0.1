@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from app.llm import generate_with_fallback
 from app.schemas import Clause, ExecutiveSummary, GDPRMatch, PipelineReport, RiskResult, SuggestedFix
 
 
@@ -20,6 +21,14 @@ def build_executive_summary(risks: list[RiskResult]) -> ExecutiveSummary:
     findings = []
     for r in sorted(risks, key=lambda x: x.risk_score, reverse=True)[:3]:
         findings.append(f"{r.clause_id}: score={r.risk_score}, issues={'; '.join(r.issues[:2])}")
+    llm_prompt = (
+        "Summarize the compliance posture in one concise sentence for an executive audience. "
+        "Use only these findings and mention risk severity focus.\n\n"
+        + "\n".join(findings[:3])
+    )
+    summary = generate_with_fallback(llm_prompt, temperature=0.15, max_tokens=80).text.strip()
+    if summary:
+        findings.insert(0, f"Executive: {summary}")
 
     return ExecutiveSummary(
         overall_risk_score=overall,
@@ -32,6 +41,8 @@ def build_executive_summary(risks: list[RiskResult]) -> ExecutiveSummary:
 def create_report(
     source_file: str,
     document_hash: str,
+    analysis_profile: str,
+    regulations: list[str],
     clauses: list[Clause],
     matches: list[GDPRMatch],
     risks: list[RiskResult],
@@ -40,6 +51,8 @@ def create_report(
     return PipelineReport(
         source_file=source_file,
         document_hash=document_hash,
+        analysis_profile=analysis_profile,
+        regulations=regulations,
         clauses=clauses,
         gdpr_matches=matches,
         risk_scores=risks,

@@ -7,6 +7,9 @@ from app.schemas import Clause, GDPRMatch, RiskResult
 HIGH_RISK_TERMS = ("sell", "share with any third party", "unlimited", "without notice")
 LOW_CONF_TERMS = ("reasonable", "best effort", "as needed", "commercially reasonable")
 
+SOC2_REQUIRED_TERMS = ("access control", "monitoring", "logging")
+PCI_REQUIRED_TERMS = ("cardholder", "encryption", "authentication")
+
 
 def _llm_explanation(clause: Clause, top_match: GDPRMatch | None, score: int) -> str | None:
     if not settings.enable_llm_risk_explanations or not settings.openai_api_key.strip():
@@ -34,7 +37,7 @@ def _llm_explanation(clause: Clause, top_match: GDPRMatch | None, score: int) ->
         return None
 
 
-def score_risks(clauses: list[Clause], matches: list[GDPRMatch]) -> list[RiskResult]:
+def score_risks(clauses: list[Clause], matches: list[GDPRMatch], profile: str = "gdpr") -> list[RiskResult]:
     match_map: dict[str, list[GDPRMatch]] = {}
     for m in matches:
         match_map.setdefault(m.clause_id, []).append(m)
@@ -66,6 +69,19 @@ def score_risks(clauses: list[Clause], matches: list[GDPRMatch]) -> list[RiskRes
             score += 15
             issues.append("Weak GDPR alignment based on semantic match.")
 
+        regulation_set = {m.regulation.upper() for m in top_match}
+        profile_key = profile.strip().lower()
+        if profile_key in {"soc2", "multi"} or "SOC2" in regulation_set:
+            missing = [term for term in SOC2_REQUIRED_TERMS if term not in text]
+            if missing:
+                score += 10
+                issues.append(f"SOC2 coverage is thin: missing explicit controls ({', '.join(missing[:2])}).")
+        if profile_key in {"pci", "multi"} or "PCI" in regulation_set:
+            missing = [term for term in PCI_REQUIRED_TERMS if term not in text]
+            if missing:
+                score += 10
+                issues.append(f"PCI control language appears incomplete ({', '.join(missing[:2])}).")
+
         score = max(0, min(100, score))
         severity = "low"
         if score >= 70:
@@ -74,7 +90,7 @@ def score_risks(clauses: list[Clause], matches: list[GDPRMatch]) -> list[RiskRes
             severity = "medium"
 
         if not issues:
-            issues.append("No significant GDPR risks detected by MVP rule set.")
+            issues.append("No significant risks detected by the current rule set.")
 
         llm_note = _llm_explanation(clause, top_match[0] if top_match else None, score)
         if llm_note:

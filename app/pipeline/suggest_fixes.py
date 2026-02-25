@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from app.llm import generate_with_fallback
 from app.schemas import Clause, GDPRMatch, RiskResult, SuggestedFix
 
 
@@ -38,17 +39,31 @@ def suggest_fixes(
         article_lines = " ".join(_article_line(article) for article in articles)
 
         base_text = clause.text.strip()
-        proposed = (
+        fallback = (
             f"Replace clause with GDPR-grounded language. {article_lines} "
             "Use measurable obligations, explicit timelines, and controller-approval controls for subprocessors."
         )
         if len(base_text) > 0 and len(base_text) < 350:
-            proposed = f"{proposed} Existing clause context: {base_text[:120]}."
+            fallback = f"{fallback} Existing clause context: {base_text[:120]}."
+
+        prompt = (
+            "Rewrite the clause to reduce compliance risk while preserving business intent.\n"
+            "Requirements:\n"
+            "- Keep it concise and contractual.\n"
+            "- Include explicit obligations and time bounds when relevant.\n"
+            "- Do not invent facts beyond the provided clause and citations.\n\n"
+            f"Clause:\n{base_text[:1200]}\n\n"
+            f"Risk issues:\n- " + "\n- ".join(risk.issues[:4]) + "\n\n"
+            f"Citations:\n- " + "\n- ".join(articles) + "\n\n"
+            "Return only the rewritten clause text."
+        )
+        llm = generate_with_fallback(prompt, temperature=0.15, max_tokens=260)
+        proposed = llm.text.strip() if llm.text.strip() else fallback
 
         suggestions.append(
             SuggestedFix(
                 clause_id=risk.clause_id,
-                rationale="Grounded in top RAG-matched GDPR articles for this clause.",
+                rationale=f"Grounded in top RAG-matched articles; generated with {llm.provider} fallback-safe mode.",
                 referenced_articles=articles,
                 suggested_text=proposed,
             )

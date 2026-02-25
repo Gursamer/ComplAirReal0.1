@@ -1,0 +1,37 @@
+Privacy Policy - StartupAI Labs
+
+Effective Date: February 1, 2026
+
+StartupAI Labs ("Company", "we", "us") provides AI workflow software for business users.
+
+1. Data We Collect
+- Account data: name, work email, password hash.
+- Product usage data: feature interactions, uploads, report activity.
+- Support data: email correspondence and troubleshooting metadata.
+
+2. Purpose of Processing
+We process personal data to provide our services, secure accounts, improve product quality, and satisfy legal obligations.
+
+3. Legal Bases
+We rely on contract performance, legitimate interests, and consent where required.
+
+4. Data Sharing
+We may share data with cloud and payment processors. We do not sell personal data.
+
+5. Security
+We implement reasonable security measures to protect data.
+
+6. Retention
+We retain data as long as needed for service delivery and legal compliance.
+
+7. International Transfers
+We may transfer data across regions using contractual safeguards.
+
+8. User Rights
+Users can request access, correction, deletion, and export of personal data.
+
+9. Breach Notification
+We will notify users and authorities of qualifying data breaches in line with applicable law.
+
+10. Contact
+privacy@startupai.example

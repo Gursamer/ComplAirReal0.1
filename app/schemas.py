@@ -25,6 +25,7 @@ class GDPRMatch:
     topic: str
     snippet: str
     similarity_score: float
+    regulation: str = "GDPR"
 
     def __post_init__(self) -> None:
         self.similarity_score = max(0.0, min(1.0, float(self.similarity_score)))
@@ -80,6 +81,8 @@ class ExecutiveSummary:
 class PipelineReport:
     source_file: str
     document_hash: str
+    analysis_profile: str
+    regulations: list[str]
     clauses: list[Clause]
     gdpr_matches: list[GDPRMatch]
     risk_scores: list[RiskResult]
@@ -90,6 +93,8 @@ class PipelineReport:
         return {
             "source_file": self.source_file,
             "document_hash": self.document_hash,
+            "analysis_profile": self.analysis_profile,
+            "regulations": self.regulations,
             "clauses": [c.to_dict() for c in self.clauses],
             "gdpr_matches": [m.to_dict() for m in self.gdpr_matches],
             "risk_scores": [r.to_dict() for r in self.risk_scores],

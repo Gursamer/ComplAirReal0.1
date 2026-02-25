@@ -79,11 +79,11 @@ export default function ReportsPage() {
       </Card>
 
       {error ? (
-        <Card className="p-5 text-sm text-rose-700">{error}</Card>
+        <Card className="p-5 text-sm text-rose-300">{error}</Card>
       ) : (
-        <Card className="overflow-hidden">
+        <Card className="overflow-hidden border border-slate-200">
           <table className="w-full text-sm">
-            <thead className="bg-slate-50 text-left text-slate-500">
+            <thead className="bg-slate-100 text-left text-slate-500">
               <tr>
                 <th className="px-5 py-3 font-medium">Filename</th>
                 <th className="px-5 py-3 font-medium">Date</th>
@@ -94,9 +94,9 @@ export default function ReportsPage() {
             </thead>
             <tbody>
               {filtered.map((report) => (
-                <tr key={report.id} className="border-t border-slate-100">
-                  <td className="px-5 py-3 font-medium text-text">{report.filename}</td>
-                  <td className="px-5 py-3 text-slate-600">{formatDate(report.timestamp)}</td>
+                <tr key={report.id} className="border-t border-slate-200">
+                  <td className="px-5 py-3 font-medium text-slate-900">{report.filename}</td>
+                  <td className="px-5 py-3 text-slate-500">{formatDate(report.timestamp)}</td>
                   <td className="px-5 py-3 text-slate-700">{report.overallScore}</td>
                   <td className="px-5 py-3">
                     <SeverityBadge severity={report.severity} />

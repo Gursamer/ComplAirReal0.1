@@ -3,14 +3,21 @@
 @tailwind utilities;
 
 :root {
-  --bg: 205 36% 97%;
-  --card: 0 0% 100%;
-  --text: 215 35% 13%;
-  --muted: 215 16% 47%;
-  --accent: 177 81% 28%;
-  --low: 142 71% 35%;
-  --medium: 35 91% 37%;
-  --high: 345 85% 41%;
+  --bg: 220 28% 6%;
+  --card: 215 30% 96%;
+  --text: 220 28% 92%;
+  --muted: 220 15% 70%;
+  --accent-start: 150 89% 48%;
+  --accent-end: 270 80% 62%;
+  --low: 142 76% 36%;
+  --medium: 44 95% 48%;
+  --high: 0 84% 58%;
+  --h1: clamp(2.2rem, 4.5vw, 4.1rem);
+  --h2: clamp(1.45rem, 2.4vw, 2.3rem);
+  --body: 1rem;
+  --micro-ms: 180ms;
+  --section-ms: 460ms;
+  --hero-ms: 780ms;
 }
 
 * {
@@ -21,13 +28,60 @@ body {
   margin: 0;
   min-height: 100vh;
   color: hsl(var(--text));
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif;
   background:
-    radial-gradient(circle at 15% 15%, rgba(15, 118, 110, 0.16), transparent 42%),
-    radial-gradient(circle at 85% 5%, rgba(16, 185, 129, 0.15), transparent 38%),
-    linear-gradient(180deg, #f8fbfd 0%, #eef4fa 100%);
+    radial-gradient(circle at 14% 10%, rgba(22, 163, 74, 0.18), transparent 30%),
+    radial-gradient(circle at 90% 2%, rgba(139, 92, 246, 0.18), transparent 24%),
+    linear-gradient(180deg, #0b0f14 0%, #0d1119 52%, #0b0f14 100%);
+  font-size: var(--body);
 }
 
 a {
   color: inherit;
   text-decoration: none;
+}
+
+.glass-card {
+  background: linear-gradient(180deg, rgba(246, 248, 253, 0.94), rgba(238, 242, 250, 0.9));
+  border: 1px solid rgba(148, 163, 184, 0.34);
+  box-shadow: 0 16px 38px rgba(2, 8, 23, 0.34);
+  backdrop-filter: blur(10px);
+}
+
+.type-h1 {
+  font-size: var(--h1);
+  line-height: 1.02;
+  letter-spacing: -0.02em;
+}
+
+.type-h2 {
+  font-size: var(--h2);
+  line-height: 1.08;
+  letter-spacing: -0.015em;
+}
+
+.accent-line {
+  background: linear-gradient(90deg, hsl(var(--accent-start) / 0.85), hsl(var(--accent-end) / 0.85));
+}
+
+.interactive-lift {
+  transition:
+    transform var(--micro-ms) ease,
+    box-shadow var(--micro-ms) ease,
+    border-color var(--micro-ms) ease;
+}
+
+.interactive-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 34px rgba(8, 11, 20, 0.28), 0 0 0 1px rgba(34, 197, 94, 0.16);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .interactive-lift {
+    transition: none;
+  }
+
+  .interactive-lift:hover {
+    transform: none;
+  }
 }

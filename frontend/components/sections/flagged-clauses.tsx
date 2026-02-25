@@ -15,26 +15,26 @@ export function FlaggedClauses({ clauses }: { clauses: NormalizedClause[] }) {
   if (!risky.length) {
     return (
       <Card className="p-5">
-        <h3 className="text-base font-semibold">Flagged Clauses</h3>
-        <p className="mt-3 text-sm text-slate-600">No medium/high risk clauses in this report.</p>
+        <h3 className="text-base font-semibold text-slate-900">Flagged Clauses</h3>
+        <p className="mt-3 text-sm text-slate-500">No medium/high risk clauses in this report.</p>
       </Card>
     );
   }
 
   return (
     <Card className="p-5">
-      <h3 className="text-base font-semibold text-text">Flagged Clauses</h3>
+      <h3 className="text-base font-semibold text-slate-900">Flagged Clauses</h3>
       <div className="mt-4 space-y-3">
         {risky.map((clause) => {
           const open = openId === clause.id;
           return (
-            <div key={clause.id} className="rounded-xl border border-slate-200 bg-white">
+            <div key={clause.id} className="rounded-xl border border-slate-200 bg-slate-50">
               <button
                 onClick={() => setOpenId(open ? null : clause.id)}
                 className="flex w-full items-center justify-between px-4 py-3 text-left"
               >
                 <div>
-                  <p className="text-sm font-semibold text-text">{clause.title}</p>
+                  <p className="text-sm font-semibold text-slate-900">{clause.title}</p>
                   <p className="text-xs text-slate-500">{clause.category}</p>
                 </div>
                 <div className="flex items-center gap-3">
@@ -45,12 +45,12 @@ export function FlaggedClauses({ clauses }: { clauses: NormalizedClause[] }) {
               <div
                 className={cn(
                   "grid transition-all duration-300",
-                  open ? "grid-rows-[1fr] border-t border-slate-100" : "grid-rows-[0fr]",
+                  open ? "grid-rows-[1fr] border-t border-slate-200" : "grid-rows-[0fr]",
                 )}
               >
                 <div className="overflow-hidden">
                   <div className="space-y-3 p-4 text-sm text-slate-700">
-                    <p className="rounded-lg bg-slate-50 p-3">{clause.text || "No clause text available."}</p>
+                    <p className="rounded-lg bg-white p-3">{clause.text || "No clause text available."}</p>
                     <div>
                       <p className="font-semibold">Risk reasons</p>
                       <ul className="mt-2 list-disc space-y-1 pl-5">
@@ -63,7 +63,7 @@ export function FlaggedClauses({ clauses }: { clauses: NormalizedClause[] }) {
                       <p className="font-semibold">Citations</p>
                       <div className="mt-2 flex flex-wrap gap-2">
                         {clause.matches.slice(0, 3).map((match, idx) => (
-                          <span key={`${clause.id}-m-${idx}`} className="rounded-full bg-slate-900 px-3 py-1 text-xs text-white">
+                          <span key={`${clause.id}-m-${idx}`} className="rounded-full bg-slate-100 px-3 py-1 text-xs text-slate-900">
                             {match.article}
                           </span>
                         ))}

@@ -29,6 +29,13 @@ class Settings:
     report_dir: str
     clause_top_k: int
     enable_llm_risk_explanations: bool
+    auth_secret: str
+    auth_users_file: str
+    sqlite_db_file: str
+    llm_provider: str
+    ollama_url: str
+    ollama_model: str
+    llm_timeout_ms: int
 
     @property
     def chroma_path(self) -> Path:
@@ -37,6 +44,14 @@ class Settings:
     @property
     def report_path(self) -> Path:
         return Path(self.report_dir)
+
+    @property
+    def auth_users_path(self) -> Path:
+        return Path(self.auth_users_file)
+
+    @property
+    def sqlite_db_path(self) -> Path:
+        return Path(self.sqlite_db_file)
 
 
 _load_dotenv_if_present()
@@ -58,4 +73,11 @@ settings = Settings(
     report_dir=os.environ.get("REPORT_DIR", "storage/reports"),
     clause_top_k=max(1, _parsed_top_k),
     enable_llm_risk_explanations=_parsed_llm_explain,
+    auth_secret=os.environ.get("AUTH_SECRET", "change-me-for-production"),
+    auth_users_file=os.environ.get("AUTH_USERS_FILE", "storage/auth/users.json"),
+    sqlite_db_file=os.environ.get("SQLITE_DB_FILE", "storage/workspace.db"),
+    llm_provider=os.environ.get("LLM_PROVIDER", "stub"),
+    ollama_url=os.environ.get("OLLAMA_URL", "http://127.0.0.1:11434"),
+    ollama_model=os.environ.get("OLLAMA_MODEL", "qwen2.5:1.5b"),
+    llm_timeout_ms=max(1000, int(os.environ.get("LLM_TIMEOUT_MS", "20000"))),
 )

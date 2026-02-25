@@ -1,0 +1,30 @@
+Terms of Service - StartupAI Labs
+
+Effective Date: February 1, 2026
+
+1. Services
+StartupAI Labs provides software for document analysis and compliance insight generation.
+
+2. Customer Responsibilities
+Customers must ensure they have rights to upload documents and must not submit unlawful content.
+
+3. Data Processing
+Company processes customer-provided content to deliver outputs and improve reliability.
+
+4. Availability
+We target high service availability but do not guarantee uninterrupted operation.
+
+5. Security and Confidentiality
+We apply reasonable safeguards to protect customer data and maintain confidentiality.
+
+6. Limitation of Liability
+To the maximum extent permitted by law, aggregate liability is limited to fees paid in the previous 12 months.
+
+7. Indemnification
+Customers indemnify Company for claims resulting from unlawful customer content.
+
+8. Termination
+Either party may terminate for material breach with written notice and cure period.
+
+9. Governing Law
+Delaware law governs these Terms.

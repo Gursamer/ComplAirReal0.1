@@ -2,6 +2,10 @@
 
 Next.js web app for the ComplyAI investor demo UI.
 
+Design system + motion roadmap:
+
+- `DESIGN_SYSTEM.md`
+
 ## Stack
 
 - Next.js (App Router + TypeScript)
@@ -12,8 +16,10 @@ Next.js web app for the ComplyAI investor demo UI.
 ## Features
 
 - Marketing landing page
+- Investor brief page (`/investor`)
 - Product dashboard with charts and recent reports
 - Upload + analyze flow with staged progress animation
+  - profile selector: GDPR / SOC 2 / PCI DSS / Multi
 - Report results page with:
   - overall score + severity
   - KPI cards
@@ -22,9 +28,12 @@ Next.js web app for the ComplyAI investor demo UI.
   - suggested fixes with copy button
   - GDPR citations
   - JSON export
+  - PDF export
+  - offline AI copilot chat panel with citation-aware responses
 - Reports list with search/filter/sort
 - Settings page (API base URL + demo theme toggle)
-- Demo auth gate (mock sign-in)
+- Real JWT auth flow (signup/login/logout)
+- Chat panel uses backend `/chat` when available, then falls back to local demo responder
 
 ## Setup
 
@@ -49,6 +58,10 @@ npm run dev
 
 - http://localhost:3000
 
+4. Create an account:
+
+- Visit `/signup`, create user, then enter dashboard.
+
 ## Environment
 
 `.env.local`
@@ -61,3 +74,4 @@ NEXT_PUBLIC_API_BASE_URL=http://127.0.0.1:8000
 
 - UI has a normalization layer so backend payload variations are handled safely.
 - If your backend is on a different host/port, update it on the Settings page or `.env.local`.
+- Auth users are stored locally via backend `AUTH_USERS_FILE` (default `storage/auth/users.json`).

@@ -43,6 +43,8 @@ class SmokeTests(unittest.TestCase):
         report = create_report(
             source_file=str(SAMPLE_PDF),
             document_hash=self.doc_hash,
+            analysis_profile="gdpr",
+            regulations=["GDPR"],
             clauses=self.clauses,
             matches=self.matches,
             risks=self.risks,
