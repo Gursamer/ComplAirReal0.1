@@ -1,22 +1,72 @@
-# ComplyAI (Week 1 MVP - GDPR First)
+# ComplyAI
 
-Local CLI prototype for contract/privacy document analysis:
+ComplyAI is a local-first compliance analysis app for contracts and policies.
+It can:
 
-- Extract clauses from PDF
-- Match clauses to relevant GDPR articles (RAG)
-- Score risk and identify issues
-- Suggest improved clause text
-- Save a structured JSON report
+- parse PDF/DOCX/TXT documents
+- extract clause-like sections
+- match clauses to GDPR (and profile-based SOC2/PCI controls)
+- score risk with deterministic rules
+- propose safer rewrite suggestions
+- produce JSON/PDF reports
+- answer report-grounded chat questions with citations
 
-## Roadmap
+The project includes a FastAPI backend and a Next.js frontend investor demo.
 
-Free-only investor roadmap and implementation tracker:
+## Architecture
 
-- `ROADMAP_FREE.md`
-- `INVESTOR_READINESS.md`
-- `INVESTOR_DEMO_SCRIPT.md`
+High-level components:
 
-## Setup
+- `frontend/`: Next.js App Router UI (upload, reports, dashboard, chat)
+- `app/api/`: FastAPI routes (`/analyze`, `/reports`, `/chat`, `/auth`)
+- `app/pipeline/`: analysis pipeline (extract -> match -> score -> suggest -> report)
+- `app/rag/`: regulation chunking + index build
+- `app/utils/`: text extraction/cleanup, hashing, embeddings, auth helpers
+- `app/storage/`: SQLite persistence helpers
+- `data/regulations/`: GDPR source text and generated chunks
+- `storage/`: generated reports, vector index fallback, sqlite db, auth user file
+
+## End-to-End Flow
+
+When a user uploads a file from `/upload`:
+
+1. Frontend sends `POST /analyze` with multipart file + profile (`gdpr|soc2|pci|multi`).
+2. Backend extracts text:
+   - PDF via `pypdf` with fallback raw decode
+   - DOCX via `word/document.xml` parse
+   - TXT via UTF-8 decode
+3. Pipeline runs:
+   - normalize text
+   - split into clause-like blocks
+   - build clause objects (`C001`, `C002`, ...)
+   - retrieve regulation matches (RAG for GDPR, keyword controls for SOC2/PCI)
+   - compute clause risk scores/severity
+   - generate suggested fixes via LLM provider abstraction
+   - compute executive summary
+4. Report JSON is saved to `storage/reports/<document_hash>.json`.
+5. Report metadata is upserted into SQLite (`storage/workspace.db`).
+6. Frontend loads the report, normalizes payload shape, and renders charts/sections.
+7. Chat panel calls `/chat`; if unavailable, frontend falls back to local demo responder.
+
+## Core Technologies and Concepts
+
+- FastAPI, Pydantic, multipart uploads
+- Next.js 14 (App Router) + TypeScript + Tailwind + Recharts + Framer Motion
+- JWT auth (HMAC SHA-256), PBKDF2 password hashing
+- SQLite schema + upsert patterns
+- Text preprocessing and rule-based clause segmentation
+- RAG fundamentals:
+  - legal text chunking
+  - embedding generation
+  - cosine similarity ranking
+  - top-k retrieval
+- Hybrid matching strategy:
+  - semantic retrieval for GDPR
+  - keyword scoring for SOC2/PCI controls
+- Deterministic risk heuristics + severity thresholds
+- LLM provider abstraction (`stub` and `ollama`) with safe fallback behavior
+
+## Backend Quick Start
 
 ```bash
 cd complyai
@@ -26,15 +76,17 @@ pip install -r requirements.txt
 cp .env.example .env
 ```
 
-Configure `.env`:
+Example `.env`:
 
 ```env
-OPENAI_API_KEY=...
+OPENAI_API_KEY=
 MODEL_TEXT=gpt-4.1-mini
 MODEL_EMBED=text-embedding-3-small
 CHROMA_DIR=storage/chroma
 REPORT_DIR=storage/reports
 SQLITE_DB_FILE=storage/workspace.db
+AUTH_USERS_FILE=storage/auth/users.json
+AUTH_SECRET=change-me-for-production
 CLAUSE_TOP_K=3
 ENABLE_LLM_RISK_EXPLANATIONS=0
 LLM_PROVIDER=stub
@@ -43,52 +95,25 @@ OLLAMA_MODEL=qwen2.5:1.5b
 LLM_TIMEOUT_MS=20000
 ```
 
-## Build GDPR index
+Build regulation index:
 
 ```bash
 python -m app.rag.build_index
 ```
 
-## Run full analysis
-
-```bash
-python -m app.pipeline.run_pipeline --file data/samples/contracts/sample_vendor_agreement.pdf
-```
-
-## Run API (Week 3)
+Run API:
 
 ```bash
 uvicorn app.api.main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
-Endpoints:
-
-- `POST /auth/signup` -> create account + return JWT
-- `POST /auth/login` -> login + return JWT
-- `GET /auth/me` -> validate JWT
-- `POST /analyze` (multipart upload with PDF/DOCX/TXT + optional `profile=gdpr|soc2|pci|multi` + bearer token) -> returns report JSON
-- `GET /reports/{id}` -> returns stored report JSON
-- `GET /reports` -> lists stored reports
-- `GET /reports/{id}/export.pdf` -> exports report as PDF
-- `POST /chat` (`report_id`, `question`) -> grounded answer + citations (local LLM or free stub)
-
-Example curl:
+Health check:
 
 ```bash
-curl -X POST "http://127.0.0.1:8000/analyze" \
-  -H "Authorization: Bearer <token>" \
-  -H "accept: application/json" \
-  -H "Content-Type: multipart/form-data" \
-  -F "file=@data/samples/contracts/sample_vendor_agreement.pdf"
+curl http://127.0.0.1:8000/health
 ```
 
-## Smoke tests
-
-```bash
-python -m unittest app.tests.test_smoke -v
-```
-
-## Frontend investor demo (Phase 3)
+## Frontend Quick Start
 
 ```bash
 cd frontend
@@ -97,40 +122,74 @@ npm install
 npm run dev
 ```
 
-Open `http://localhost:3000`.
+Default URL: `http://localhost:3000`
 
-Frontend pages:
+Set API base in `frontend/.env.local`:
 
-- `/` marketing landing
-- `/login` and `/signup` auth pages
-- `/dashboard` dashboard + charts
-- `/upload` upload + analyze
-- `/analytics` analytics charts
-- `/reports` reports list
-- `/reports/{id}` detailed report view
-- `/settings` API base URL + demo settings
+```env
+NEXT_PUBLIC_API_BASE_URL=http://127.0.0.1:8000
+```
 
-## Output
+## API Endpoints
 
-Report JSON is written to:
+- `POST /auth/signup`: create account, return JWT
+- `POST /auth/login`: login, return JWT
+- `GET /auth/me`: validate JWT
+- `POST /analyze`: upload file and return report payload
+- `GET /reports`: list reports
+- `GET /reports/{id}`: fetch one report JSON
+- `GET /reports/{id}/export.pdf`: export PDF report
+- `POST /chat`: report-grounded Q&A + citations
 
-- `storage/reports/<doc_hash>.json`
+Analyze example:
 
-Includes:
+```bash
+curl -X POST "http://127.0.0.1:8000/analyze" \
+  -H "Authorization: Bearer <token>" \
+  -H "accept: application/json" \
+  -H "Content-Type: multipart/form-data" \
+  -F "profile=gdpr" \
+  -F "file=@data/samples/contracts/sample_vendor_agreement.pdf"
+```
+
+## Output and Persistence
+
+- report files: `storage/reports/<doc_hash>.json`
+- vector index / fallback artifacts: `storage/chroma/`
+- sqlite workspace db: `storage/workspace.db`
+- legacy/local auth users file: `storage/auth/users.json`
+
+Report payload includes:
 
 - `clauses`
 - `gdpr_matches`
 - `risk_scores`
 - `suggested_fixes`
 - `executive_summary`
+- `analysis_profile`
+- `regulations`
 
-## Notes
+## Testing
 
-- If `OPENAI_API_KEY` is not set, the pipeline still runs using deterministic local heuristics/fallback embeddings.
-- Default `LLM_PROVIDER=stub` is fully free and offline. Set `LLM_PROVIDER=ollama` for local model generation.
-- `storage/chroma` is created automatically.
+Smoke test:
 
-## Free Local LLM (Optional)
+```bash
+python -m unittest app.tests.test_smoke -v
+```
+
+Validates:
+
+- clause extraction returns expected structure
+- RAG matching returns at least one hit per clause
+- report schema shape is intact
+
+## Known Current Behavior
+
+- Backend auth is implemented.
+- Frontend auth helpers are implemented.
+- Current `/login` and `/signup` routes redirect to `/dashboard` in this demo branch.
+
+## Optional: Free Local LLM via Ollama
 
 ```bash
 brew install ollama
@@ -138,10 +197,16 @@ ollama serve
 ollama pull qwen2.5:1.5b
 ```
 
-Then in `.env` set:
+Then set in `.env`:
 
 ```env
 LLM_PROVIDER=ollama
 ```
 
-This keeps everything local and avoids paid API usage.
+If Ollama is unavailable, generation falls back to deterministic `stub` responses.
+
+## Roadmap Docs
+
+- `ROADMAP_FREE.md`
+- `INVESTOR_READINESS.md`
+- `INVESTOR_DEMO_SCRIPT.md`
